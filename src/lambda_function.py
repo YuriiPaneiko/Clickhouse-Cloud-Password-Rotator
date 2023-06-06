@@ -4,19 +4,22 @@ import json
 import os
 
 secrets_manager = boto3.client('secretsmanager')
-API_KEY = secrets_manager.get_secret_value(
-    SecretId="clickhouse_cloud_token")['SecretString']
 
+CLICKHOUSE_CLOUD_API_SECRET_NAME = os.environ['CLICKHOUSE_CLOUD_API_SECRET_NAME']
 ENVIRONMENT = os.environ['ENVIRONMENT']
 CL_CLOUD_API = os.environ['CL_CLOUD_API']
 ORGANIZATION_ID = os.environ['ORGANIZATION_ID']
 SERVICE_NAME = os.environ['SERVICE_NAME']
 
+api_key = secrets_manager.get_secret_value(
+    SecretId=CLICKHOUSE_CLOUD_API_SECRET_NAME)['SecretString']
+
 secret_name = ENVIRONMENT + "-clickhouse-credentials"
 
 headers = {
-    'Authorization': 'Basic ' + API_KEY
+    'Authorization': 'Basic ' + api_key
 }
+
 
 def get_service_id(CL_CLOUD_API, ORGANIZATION_ID, headers):
     global service_id
@@ -40,7 +43,7 @@ def change_password(CL_CLOUD_API, ORGANIZATION_ID, service_id, headers):
     return new_password
 
 
-def update_secret():
+def update_secret(new_password):
     secret_value = json.loads(secrets_manager.get_secret_value(
         SecretId=secret_name)['SecretString'])
     secret_value['password'] = new_password
@@ -56,4 +59,4 @@ def lambda_handler(event, context):
                    ORGANIZATION_ID=ORGANIZATION_ID, headers=headers)
     change_password(CL_CLOUD_API=CL_CLOUD_API,
                     ORGANIZATION_ID=ORGANIZATION_ID, service_id=service_id, headers=headers)
-    update_secret()
+    update_secret(new_password=new_password)

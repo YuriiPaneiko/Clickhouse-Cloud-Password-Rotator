@@ -7,14 +7,12 @@ secrets_manager = boto3.client('secretsmanager')
 API_KEY = secrets_manager.get_secret_value(
     SecretId="clickhouse_cloud_token")['SecretString']
 
-CONFIGURATION = os.environ['CONFIGURATION']
 ENVIRONMENT = os.environ['ENVIRONMENT']
 CL_CLOUD_API = os.environ['CL_CLOUD_API']
 ORGANIZATION_ID = os.environ['ORGANIZATION_ID']
 SERVICE_NAME = os.environ['SERVICE_NAME']
 
-secret_name = CONFIGURATION + "-" + \
-    ENVIRONMENT + "-clickhouse-credentials"
+secret_name = ENVIRONMENT + "-clickhouse-credentials"
 
 headers = {
     'Authorization': 'Basic ' + API_KEY
